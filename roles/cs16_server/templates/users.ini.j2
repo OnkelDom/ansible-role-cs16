@@ -1,0 +1,6 @@
+; Managed by Ansible. SteamID authentication requires no password.
+"loopback" "" "abcdefghijklmnopqrstuv" "de"
+{% for admin in cs16_admin_steamids %}
+"{{ admin.steamid }}" "" "abcdefghijklmnopqrstuv" "ce"{% if admin.comment | default('') %} ; {{ admin.comment }}{% endif %}
+{% endfor %}
+

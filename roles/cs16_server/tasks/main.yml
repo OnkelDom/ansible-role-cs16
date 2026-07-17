@@ -1,0 +1,254 @@
+---
+- name: Read configured foreign architectures
+  ansible.builtin.command: dpkg --print-foreign-architectures
+  register: cs16_foreign_architectures
+  changed_when: false
+
+- name: Enable i386 architecture
+  ansible.builtin.command: dpkg --add-architecture i386
+  when: "'i386' not in cs16_foreign_architectures.stdout_lines"
+  register: cs16_i386_added
+  changed_when: cs16_i386_added.rc == 0
+
+- name: Install runtime packages
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - curl
+      - tar
+      - unzip
+      - xz-utils
+      - libc6-i386
+      - lib32gcc-s1
+      - lib32stdc++6
+      - ufw
+    state: present
+    update_cache: true
+
+- name: Create CS 1.6 service group
+  ansible.builtin.group:
+    name: "{{ cs16_group }}"
+    system: true
+
+- name: Create CS 1.6 service account
+  ansible.builtin.user:
+    name: "{{ cs16_user }}"
+    group: "{{ cs16_group }}"
+    home: "{{ cs16_home }}"
+    shell: /usr/sbin/nologin
+    system: true
+    create_home: true
+
+- name: Create server directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ cs16_user }}"
+    group: "{{ cs16_group }}"
+    mode: "0750"
+  loop:
+    - "{{ cs16_steamcmd_dir }}"
+    - "{{ cs16_server_dir }}"
+
+- name: Download SteamCMD
+  ansible.builtin.get_url:
+    url: "{{ cs16_steamcmd_url }}"
+    dest: "{{ cs16_steamcmd_dir }}/steamcmd_linux.tar.gz"
+    owner: "{{ cs16_user }}"
+    group: "{{ cs16_group }}"
+    mode: "0640"
+
+- name: Extract SteamCMD
+  ansible.builtin.unarchive:
+    src: "{{ cs16_steamcmd_dir }}/steamcmd_linux.tar.gz"
+    dest: "{{ cs16_steamcmd_dir }}"
+    remote_src: true
+    owner: "{{ cs16_user }}"
+    group: "{{ cs16_group }}"
+    creates: "{{ cs16_steamcmd_dir }}/steamcmd.sh"
+
+- name: Install HLDS and Counter-Strike
+  ansible.builtin.command:
+    argv:
+      - "{{ cs16_steamcmd_dir }}/steamcmd.sh"
+      - +force_install_dir
+      - "{{ cs16_server_dir }}"
+      - +login
+      - anonymous
+      - +app_set_config
+      - "90"
+      - mod
+      - cstrike
+      - +app_update
+      - "90"
+      - validate
+      - +quit
+    creates: "{{ cs16_server_dir }}/hlds_run"
+  become_user: "{{ cs16_user }}"
+
+- name: Create Steam SDK compatibility directory
+  ansible.builtin.file:
+    path: "{{ cs16_home }}/.steam/sdk32"
+    state: directory
+    owner: "{{ cs16_user }}"
+    group: "{{ cs16_group }}"
+    mode: "0750"
+
+- name: Link 32-bit Steam client library
+  ansible.builtin.file:
+    src: "{{ cs16_steamcmd_dir }}/linux32/steamclient.so"
+    dest: "{{ cs16_home }}/.steam/sdk32/steamclient.so"
+    state: link
+    owner: "{{ cs16_user }}"
+    group: "{{ cs16_group }}"
+
+- name: Download server extensions
+  ansible.builtin.get_url:
+    url: "{{ item.url }}"
+    dest: "/tmp/{{ item.file }}"
+    mode: "0644"
+  loop:
+    - { url: "{{ cs16_amxx_base_url }}", file: amxx-base.tar.gz }
+    - { url: "{{ cs16_amxx_cstrike_url }}", file: amxx-cstrike.tar.gz }
+    - { url: "{{ cs16_metamod_url }}", file: metamod.zip }
+    - { url: "{{ cs16_yapb_url }}", file: yapb.tar.xz }
+
+- name: Install AMX Mod X base
+  ansible.builtin.unarchive:
+    src: /tmp/amxx-base.tar.gz
+    dest: "{{ cs16_server_dir }}/cstrike"
+    remote_src: true
+    owner: "{{ cs16_user }}"
+    group: "{{ cs16_group }}"
+    creates: "{{ cs16_server_dir }}/cstrike/addons/amxmodx/dlls/amxmodx_mm_i386.so"
+  notify: Restart cs16
+
+- name: Install AMX Mod X Counter-Strike addon
+  ansible.builtin.unarchive:
+    src: /tmp/amxx-cstrike.tar.gz
+    dest: "{{ cs16_server_dir }}/cstrike"
+    remote_src: true
+    owner: "{{ cs16_user }}"
+    group: "{{ cs16_group }}"
+    creates: "{{ cs16_server_dir }}/cstrike/addons/amxmodx/modules/cstrike_amxx_i386.so"
+  notify: Restart cs16
+
+- name: Install Metamod
+  ansible.builtin.unarchive:
+    src: /tmp/metamod.zip
+    dest: "{{ cs16_server_dir }}/cstrike"
+    remote_src: true
+    owner: "{{ cs16_user }}"
+    group: "{{ cs16_group }}"
+    creates: "{{ cs16_server_dir }}/cstrike/addons/metamod/dlls/metamod.so"
+  notify: Restart cs16
+
+- name: Install YaPB
+  ansible.builtin.unarchive:
+    src: /tmp/yapb.tar.xz
+    dest: "{{ cs16_server_dir }}/cstrike"
+    remote_src: true
+    owner: "{{ cs16_user }}"
+    group: "{{ cs16_group }}"
+    creates: "{{ cs16_server_dir }}/cstrike/addons/yapb/bin/yapb.so"
+  notify: Restart cs16
+
+- name: Configure Metamod as game DLL
+  ansible.builtin.lineinfile:
+    path: "{{ cs16_server_dir }}/cstrike/liblist.gam"
+    regexp: '^gamedll_linux '
+    line: 'gamedll_linux "addons/metamod/dlls/metamod.so"'
+  notify: Restart cs16
+
+- name: Configure Metamod plugins
+  ansible.builtin.template:
+    src: plugins.ini.j2
+    dest: "{{ cs16_server_dir }}/cstrike/addons/metamod/plugins.ini"
+    owner: "{{ cs16_user }}"
+    group: "{{ cs16_group }}"
+    mode: "0640"
+  notify: Restart cs16
+
+- name: Configure YaPB
+  ansible.builtin.lineinfile:
+    path: "{{ cs16_server_dir }}/cstrike/addons/yapb/conf/yapb.cfg"
+    regexp: "^{{ item.key }} "
+    line: '{{ item.key }} "{{ item.value }}"'
+  loop:
+    - { key: yb_quota, value: "{{ cs16_bot_fill_players }}" }
+    - { key: yb_quota_mode, value: fill }
+    - { key: yb_kick_after_player_connect, value: '1' }
+    - { key: yb_difficulty, value: "{{ cs16_bot_difficulty }}" }
+    - { key: yb_think_fps, value: "{{ cs16_bot_think_fps }}" }
+  notify: Restart cs16
+
+- name: Configure server
+  ansible.builtin.template:
+    src: server.cfg.j2
+    dest: "{{ cs16_server_dir }}/cstrike/server.cfg"
+    owner: "{{ cs16_user }}"
+    group: "{{ cs16_group }}"
+    mode: "0640"
+  notify: Restart cs16
+
+- name: Configure map cycle
+  ansible.builtin.template:
+    src: mapcycle.txt.j2
+    dest: "{{ cs16_server_dir }}/cstrike/mapcycle.txt"
+    owner: "{{ cs16_user }}"
+    group: "{{ cs16_group }}"
+    mode: "0640"
+  notify: Restart cs16
+
+- name: Configure AMX Mod X admins
+  ansible.builtin.template:
+    src: users.ini.j2
+    dest: "{{ cs16_server_dir }}/cstrike/addons/amxmodx/configs/users.ini"
+    owner: "{{ cs16_user }}"
+    group: "{{ cs16_group }}"
+    mode: "0640"
+  notify: Restart cs16
+
+- name: Install optional custom maps
+  ansible.builtin.get_url:
+    url: "{{ item.url }}"
+    dest: "{{ cs16_server_dir }}/cstrike/maps/{{ item.filename }}"
+    owner: "{{ cs16_user }}"
+    group: "{{ cs16_group }}"
+    mode: "0640"
+  loop: "{{ cs16_custom_maps }}"
+  notify: Restart cs16
+
+- name: Install update helper
+  ansible.builtin.template:
+    src: update-cs16.sh.j2
+    dest: /usr/local/sbin/update-cs16
+    owner: root
+    group: root
+    mode: "0750"
+
+- name: Install systemd unit
+  ansible.builtin.template:
+    src: cs16.service.j2
+    dest: /etc/systemd/system/cs16.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Reload systemd
+    - Restart cs16
+
+- name: Allow CS 1.6 through UFW
+  community.general.ufw:
+    rule: allow
+    port: "{{ cs16_port }}"
+    proto: udp
+    comment: Counter-Strike 1.6
+  when: cs16_manage_ufw | bool
+
+- name: Enable and start CS 1.6 server
+  ansible.builtin.systemd_service:
+    name: cs16.service
+    enabled: true
+    state: started
+    daemon_reload: true

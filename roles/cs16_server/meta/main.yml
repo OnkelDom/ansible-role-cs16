@@ -1,0 +1,14 @@
+---
+galaxy_info:
+  role_name: cs16_server
+  author: Dominik
+  description: Counter-Strike 1.6 HLDS with AMX Mod X and YaPB
+  license: MIT
+  min_ansible_version: "2.15"
+  platforms:
+    - name: Debian
+      versions:
+        - bookworm
+        - trixie
+dependencies: []
+

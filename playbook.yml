@@ -1,0 +1,13 @@
+---
+- name: Install Counter-Strike 1.6 server
+  hosts: cs16
+  become: true
+  roles:
+    - role: cs16_server
+      vars:
+        cs16_hostname: "LenMail CS 1.6"
+        cs16_maxplayers: 16
+        cs16_bot_fill_players: 10
+        cs16_admin_steamids:
+          - steamid: "STEAM_0:1:44263"
+            comment: "OnkelDom"

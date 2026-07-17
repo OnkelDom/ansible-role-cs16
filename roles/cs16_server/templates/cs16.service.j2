@@ -1,0 +1,24 @@
+[Unit]
+Description=Counter-Strike 1.6 Dedicated Server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User={{ cs16_user }}
+Group={{ cs16_group }}
+WorkingDirectory={{ cs16_server_dir }}
+ExecStart={{ cs16_server_dir }}/hlds_run -game cstrike -port {{ cs16_port }} -pingboost {{ cs16_pingboost }} +ip 0.0.0.0 +maxplayers {{ cs16_maxplayers }} +map {{ cs16_start_map }} +sv_lan {{ 0 if cs16_public else 1 }} +sys_ticrate {{ cs16_sys_ticrate }}
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=20
+KillSignal=SIGINT
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths={{ cs16_server_dir }}
+
+[Install]
+WantedBy=multi-user.target
+
