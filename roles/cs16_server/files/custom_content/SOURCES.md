@@ -13,3 +13,7 @@ start map and rotation without depending on unstable third-party download URLs.
 Valve-owned stock maps and stock game assets are not duplicated here. Review
 the individual community map licensing terms before redistributing this role
 outside the server owner's own infrastructure.
+
+`fy_iceworld` references `de_vegas.wad`; it is bundled alongside the map and
+declared in `maps/fy_iceworld.res` so clients receive the required textures via
+FastDL before loading the map.
