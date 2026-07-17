@@ -183,6 +183,8 @@
     - { key: yb_difficulty, value: "{{ cs16_bot_difficulty }}" }
     - { key: yb_think_fps, value: "{{ cs16_bot_think_fps }}" }
     - { key: yb_shoots_thru_walls, value: "{{ cs16_bot_shoots_thru_walls }}" }
+    - { key: yb_chat, value: "{{ cs16_bot_chat_enabled }}" }
+    - { key: yb_chat_percent, value: "{{ cs16_bot_chat_percent }}" }
   notify: Restart cs16
 
 - name: Configure server

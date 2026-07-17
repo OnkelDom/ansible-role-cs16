@@ -42,6 +42,8 @@ cs16_pingboost: 2
 cs16_bot_fill_players: 10
 cs16_bot_difficulty: 1
 cs16_bot_shoots_thru_walls: 0
+cs16_bot_chat_enabled: 1
+cs16_bot_chat_percent: 5
 cs16_mp_timelimit: 20
 cs16_mp_maxrounds: 0
 cs16_mp_freezetime: 3

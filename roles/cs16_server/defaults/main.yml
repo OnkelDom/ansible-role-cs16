@@ -34,6 +34,8 @@ cs16_bot_fill_players: 10
 cs16_bot_difficulty: 1
 cs16_bot_think_fps: 40.0
 cs16_bot_shoots_thru_walls: 0
+cs16_bot_chat_enabled: 1
+cs16_bot_chat_percent: 5
 
 cs16_manage_fail2ban_whitelist: false
 cs16_fail2ban_ignoreip:
