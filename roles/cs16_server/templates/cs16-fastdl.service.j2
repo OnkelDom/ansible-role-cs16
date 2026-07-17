@@ -1,0 +1,21 @@
+[Unit]
+Description=Counter-Strike 1.6 FastDL
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User={{ cs16_user }}
+Group={{ cs16_group }}
+WorkingDirectory={{ cs16_fastdl_root }}
+ExecStart=/usr/bin/python3 -m http.server {{ cs16_fastdl_port }} --bind 0.0.0.0 --directory {{ cs16_fastdl_root }}
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadOnlyPaths={{ cs16_fastdl_root }}
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,14 @@
+//overview description file for awp_map.bsp
+
+global
+{
+	ZOOM	2.31
+	ORIGIN	254.44      -252.25 	   -352
+	ROTATED 1
+}
+
+layer
+{
+	IMAGE	"overviews/awp_map.tga"
+	HEIGHT	-513
+}
