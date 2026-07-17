@@ -209,6 +209,16 @@
     mode: "0640"
   notify: Restart cs16
 
+- name: Configure AMX Mod X map voting
+  ansible.builtin.lineinfile:
+    path: "{{ cs16_server_dir }}/cstrike/addons/amxmodx/configs/amxx.cfg"
+    regexp: "^{{ item.key }} "
+    line: "{{ item.key }} {{ item.value }}"
+  loop:
+    - { key: amx_extendmap_max, value: "{{ cs16_amx_extendmap_max }}" }
+    - { key: amx_extendmap_step, value: "{{ cs16_amx_extendmap_step }}" }
+  notify: Restart cs16
+
 - name: Install optional custom maps
   ansible.builtin.get_url:
     url: "{{ item.url }}"

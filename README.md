@@ -37,6 +37,8 @@ cs16_sys_ticrate: 500
 cs16_pingboost: 2
 cs16_bot_fill_players: 10
 cs16_bot_difficulty: 2
+cs16_mp_timelimit: 20
+cs16_mp_maxrounds: 12
 cs16_admin_steamids:
   - steamid: "STEAM_0:1:44263"
     comment: "OnkelDom"

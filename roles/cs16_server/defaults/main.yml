@@ -20,6 +20,10 @@ cs16_sv_maxrate: 100000
 cs16_sv_minrate: 25000
 cs16_sv_maxupdaterate: 101
 cs16_sv_minupdaterate: 30
+cs16_mp_timelimit: 20
+cs16_mp_maxrounds: 12
+cs16_amx_extendmap_max: 20
+cs16_amx_extendmap_step: 10
 
 cs16_bot_fill_players: 10
 cs16_bot_difficulty: 2
