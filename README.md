@@ -11,7 +11,8 @@ Installs a native SteamCMD/HLDS server on Debian with:
 - an optional FastDL service for custom content;
 - optional Fail2ban whitelist management;
 - UFW rule for the UDP game port;
-- configurable slots, rates, map cycle and optional custom maps.
+- synchronized HLDS/AMX map lists and bundled classic community maps;
+- configurable slots, rates, map cycle and optional additional maps.
 
 ## Usage
 
@@ -47,6 +48,7 @@ cs16_mp_freezetime: 3
 cs16_fastdl_enabled: true
 cs16_fastdl_port: 8081
 cs16_fastdl_url: "http://srv01.lenmail.de:8081/cstrike"
+cs16_install_bundled_maps: true
 cs16_admin_steamids:
   - steamid: "STEAM_0:1:44263"
     comment: "OnkelDom"
@@ -60,10 +62,12 @@ Hetzner Cloud Firewall rules are external to the guest and are not changed by
 this role. Allow inbound UDP `cs16_port` and, when FastDL is enabled, inbound
 TCP `cs16_fastdl_port` in Hetzner as well.
 
-The role bundles the LenMail AMX plugin sources and classic announcer WAVs.
-They are compiled/deployed to the game server and mirrored to FastDL. Community
-map BSPs are deliberately not committed; configure licensed download URLs with
-`cs16_custom_maps`.
+The role bundles the LenMail AMX plugin sources, classic announcer WAVs and the
+five community maps used by the configured rotation (`fy_pool_day`,
+`fy_iceworld`, `fy_snow`, `aim_map`, `awp_map`). They are deployed to the game
+server and mirrored to FastDL. Set `cs16_install_bundled_maps: false` if you do
+not want to deploy them. Provenance and redistribution notes are documented in
+`roles/cs16_server/files/custom_content/SOURCES.md`.
 
 ## Updates
 

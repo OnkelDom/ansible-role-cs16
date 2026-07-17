@@ -52,6 +52,7 @@ cs16_fail2ban_ignoreip:
   - 217.92.194.86
 
 cs16_admin_steamids: []
+cs16_install_bundled_maps: true
 cs16_mapcycle:
   - de_dust2
   - fy_pool_day
