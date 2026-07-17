@@ -5,13 +5,17 @@ cs16_home: /opt/cs16
 cs16_server_dir: "{{ cs16_home }}/server"
 cs16_steamcmd_dir: "{{ cs16_home }}/steamcmd"
 
-cs16_hostname: "Classic CS 1.6"
+cs16_hostname: "LenMail CS 1.6 Fun Server | Classics, Bots & RTV"
 cs16_port: 27015
 cs16_maxplayers: 16
-cs16_start_map: de_dust2
+cs16_start_map: fy_pool_day
 cs16_sys_ticrate: 500
 cs16_pingboost: 2
 cs16_manage_ufw: true
+cs16_fastdl_enabled: true
+cs16_fastdl_port: 8081
+cs16_fastdl_root: /srv/cs16-fastdl
+cs16_fastdl_url: "http://srv01.lenmail.de:8081/cstrike"
 
 cs16_public: true
 cs16_password: ""
@@ -21,21 +25,44 @@ cs16_sv_minrate: 25000
 cs16_sv_maxupdaterate: 101
 cs16_sv_minupdaterate: 30
 cs16_mp_timelimit: 20
-cs16_mp_maxrounds: 12
+cs16_mp_maxrounds: 0
+cs16_mp_freezetime: 3
 cs16_amx_extendmap_max: 20
 cs16_amx_extendmap_step: 10
 
 cs16_bot_fill_players: 10
-cs16_bot_difficulty: 2
+cs16_bot_difficulty: 1
 cs16_bot_think_fps: 40.0
+cs16_bot_shoots_thru_walls: 0
+
+cs16_manage_fail2ban_whitelist: false
+cs16_fail2ban_ignoreip:
+  - 127.0.0.1/8
+  - ::1
+  - 10.0.0.0/8
+  - 172.16.0.0/12
+  - 192.168.0.0/16
+  - 100.64.0.0/10
+  - 169.254.0.0/16
+  - fc00::/7
+  - fe80::/10
+  - 2003:a:42:1400::/64
+  - 2003:a:42:1401::/64
+  - 2003:a:42:1402::/64
+  - 217.92.194.86
 
 cs16_admin_steamids: []
 cs16_mapcycle:
   - de_dust2
+  - fy_pool_day
   - de_inferno
+  - fy_iceworld
   - de_nuke
+  - fy_snow
   - de_train
+  - aim_map
   - de_cbble
+  - awp_map
   - cs_office
   - cs_italy
   - de_aztec

@@ -7,6 +7,9 @@ Installs a native SteamCMD/HLDS server on Debian with:
 - 32-bit runtime and Steam compatibility link;
 - AMX Mod X and SteamID-based admins;
 - YaPB bots that fill to a configurable player count;
+- bot-aware AMX fun announcements with bundled classic WAV sounds;
+- an optional FastDL service for custom content;
+- optional Fail2ban whitelist management;
 - UFW rule for the UDP game port;
 - configurable slots, rates, map cycle and optional custom maps.
 
@@ -30,15 +33,20 @@ keys in this project.
 ## Important variables
 
 ```yaml
-cs16_hostname: "LenMail CS 1.6"
+cs16_hostname: "LenMail CS 1.6 Fun Server | Classics, Bots & RTV"
 cs16_port: 27015
 cs16_maxplayers: 16
 cs16_sys_ticrate: 500
 cs16_pingboost: 2
 cs16_bot_fill_players: 10
-cs16_bot_difficulty: 2
+cs16_bot_difficulty: 1
+cs16_bot_shoots_thru_walls: 0
 cs16_mp_timelimit: 20
-cs16_mp_maxrounds: 12
+cs16_mp_maxrounds: 0
+cs16_mp_freezetime: 3
+cs16_fastdl_enabled: true
+cs16_fastdl_port: 8081
+cs16_fastdl_url: "http://srv01.lenmail.de:8081/cstrike"
 cs16_admin_steamids:
   - steamid: "STEAM_0:1:44263"
     comment: "OnkelDom"
@@ -49,7 +57,13 @@ YaPB `fill` mode keeps the total number of players at
 independent, so the example allows 16 human players.
 
 Hetzner Cloud Firewall rules are external to the guest and are not changed by
-this role. Allow inbound UDP `cs16_port` in Hetzner as well.
+this role. Allow inbound UDP `cs16_port` and, when FastDL is enabled, inbound
+TCP `cs16_fastdl_port` in Hetzner as well.
+
+The role bundles the LenMail AMX plugin sources and classic announcer WAVs.
+They are compiled/deployed to the game server and mirrored to FastDL. Community
+map BSPs are deliberately not committed; configure licensed download URLs with
+`cs16_custom_maps`.
 
 ## Updates
 

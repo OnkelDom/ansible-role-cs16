@@ -22,6 +22,8 @@
       - lib32gcc-s1
       - lib32stdc++6
       - ufw
+      - python3
+      - fail2ban
     state: present
     update_cache: true
 
@@ -180,6 +182,7 @@
     - { key: yb_kick_after_player_connect, value: '1' }
     - { key: yb_difficulty, value: "{{ cs16_bot_difficulty }}" }
     - { key: yb_think_fps, value: "{{ cs16_bot_think_fps }}" }
+    - { key: yb_shoots_thru_walls, value: "{{ cs16_bot_shoots_thru_walls }}" }
   notify: Restart cs16
 
 - name: Configure server
@@ -208,6 +211,114 @@
     group: "{{ cs16_group }}"
     mode: "0640"
   notify: Restart cs16
+
+- name: Install LenMail AMX Mod X plugin sources
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "{{ cs16_server_dir }}/cstrike/addons/amxmodx/scripting/{{ item }}"
+    owner: "{{ cs16_user }}"
+    group: "{{ cs16_group }}"
+    mode: "0640"
+  loop:
+    - classic_plus.sma
+    - lenmail_fun_sounds.sma
+  register: cs16_plugin_sources
+
+- name: Compile LenMail AMX Mod X plugins
+  ansible.builtin.command:
+    argv:
+      - ./amxxpc
+      - "{{ cs16_server_dir }}/cstrike/addons/amxmodx/scripting/{{ item }}"
+      - "-o{{ cs16_server_dir }}/cstrike/addons/amxmodx/plugins/{{ item | regex_replace('\\.sma$', '.amxx') }}"
+    chdir: "{{ cs16_server_dir }}/cstrike/addons/amxmodx/scripting"
+  become_user: "{{ cs16_user }}"
+  loop:
+    - classic_plus.sma
+    - lenmail_fun_sounds.sma
+  when: cs16_plugin_sources.changed
+  notify: Restart cs16
+
+- name: Enable LenMail AMX Mod X plugins
+  ansible.builtin.lineinfile:
+    path: "{{ cs16_server_dir }}/cstrike/addons/amxmodx/configs/plugins.ini"
+    line: "{{ item }}"
+    state: present
+  loop:
+    - classic_plus.amxx
+    - lenmail_fun_sounds.amxx
+  notify: Restart cs16
+
+- name: Install MapManager plugin
+  ansible.builtin.copy:
+    src: mapmanager.amxx
+    dest: "{{ cs16_server_dir }}/cstrike/addons/amxmodx/plugins/mapmanager.amxx"
+    owner: "{{ cs16_user }}"
+    group: "{{ cs16_group }}"
+    mode: "0644"
+  notify: Restart cs16
+
+- name: Install MapManager configuration
+  ansible.builtin.copy:
+    src: mapmanager.cfg
+    dest: "{{ cs16_server_dir }}/cstrike/addons/amxmodx/configs/mapmanager.cfg"
+    owner: "{{ cs16_user }}"
+    group: "{{ cs16_group }}"
+    mode: "0640"
+  notify: Restart cs16
+
+- name: Install MapManager language file
+  ansible.builtin.copy:
+    src: mapmanager.txt
+    dest: "{{ cs16_server_dir }}/cstrike/addons/amxmodx/data/lang/mapmanager.txt"
+    owner: "{{ cs16_user }}"
+    group: "{{ cs16_group }}"
+    mode: "0644"
+  notify: Restart cs16
+
+- name: Disable built-in map voting plugins
+  ansible.builtin.replace:
+    path: "{{ cs16_server_dir }}/cstrike/addons/amxmodx/configs/plugins.ini"
+    regexp: '^(nextmap|mapchooser)\.amxx'
+    replace: ';\1.amxx'
+  notify: Restart cs16
+
+- name: Enable MapManager
+  ansible.builtin.lineinfile:
+    path: "{{ cs16_server_dir }}/cstrike/addons/amxmodx/configs/plugins.ini"
+    line: mapmanager.amxx
+    state: present
+  notify: Restart cs16
+
+- name: Create announcer and FastDL directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ cs16_user }}"
+    group: "{{ cs16_group }}"
+    mode: "0755"
+  loop:
+    - "{{ cs16_server_dir }}/cstrike/sound/lenmail_classic"
+    - "{{ cs16_fastdl_root }}/cstrike/sound/lenmail_classic"
+  when: cs16_fastdl_enabled | bool
+
+- name: Install announcer sounds on game server
+  ansible.builtin.copy:
+    src: announcer/
+    dest: "{{ cs16_server_dir }}/cstrike/sound/lenmail_classic/"
+    owner: "{{ cs16_user }}"
+    group: "{{ cs16_group }}"
+    mode: "0644"
+  notify: Restart cs16
+
+- name: Publish announcer sounds through FastDL
+  ansible.builtin.copy:
+    src: announcer/
+    dest: "{{ cs16_fastdl_root }}/cstrike/sound/lenmail_classic/"
+    owner: "{{ cs16_user }}"
+    group: "{{ cs16_group }}"
+    mode: "0644"
+  when: cs16_fastdl_enabled | bool
+  notify: Restart cs16 fastdl
 
 - name: Configure AMX Mod X map voting
   ansible.builtin.lineinfile:
@@ -248,6 +359,18 @@
     - Reload systemd
     - Restart cs16
 
+- name: Install FastDL systemd unit
+  ansible.builtin.template:
+    src: cs16-fastdl.service.j2
+    dest: /etc/systemd/system/cs16-fastdl.service
+    owner: root
+    group: root
+    mode: "0644"
+  when: cs16_fastdl_enabled | bool
+  notify:
+    - Reload systemd
+    - Restart cs16 fastdl
+
 - name: Allow CS 1.6 through UFW
   community.general.ufw:
     rule: allow
@@ -256,9 +379,39 @@
     comment: Counter-Strike 1.6
   when: cs16_manage_ufw | bool
 
+- name: Allow FastDL through UFW
+  community.general.ufw:
+    rule: allow
+    port: "{{ cs16_fastdl_port }}"
+    proto: tcp
+    comment: CS 1.6 FastDL
+  when:
+    - cs16_manage_ufw | bool
+    - cs16_fastdl_enabled | bool
+
+- name: Configure Fail2ban whitelist
+  ansible.builtin.copy:
+    dest: /etc/fail2ban/jail.d/00-cs16-whitelist.local
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      [DEFAULT]
+      ignoreip = {{ cs16_fail2ban_ignoreip | join(' ') }}
+  when: cs16_manage_fail2ban_whitelist | bool
+  notify: Reload fail2ban
+
 - name: Enable and start CS 1.6 server
   ansible.builtin.systemd_service:
     name: cs16.service
     enabled: true
     state: started
     daemon_reload: true
+
+- name: Enable and start FastDL server
+  ansible.builtin.systemd_service:
+    name: cs16-fastdl.service
+    enabled: true
+    state: started
+    daemon_reload: true
+  when: cs16_fastdl_enabled | bool
