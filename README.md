@@ -37,6 +37,7 @@ keys in this project.
 cs16_hostname: "LenMail CS 1.6 Fun Server | Classics, Bots & RTV"
 cs16_port: 27015
 cs16_maxplayers: 16
+cs16_start_map: de_dust2
 cs16_sys_ticrate: 500
 cs16_pingboost: 2
 cs16_bot_fill_players: 10
@@ -65,11 +66,16 @@ this role. Allow inbound UDP `cs16_port` and, when FastDL is enabled, inbound
 TCP `cs16_fastdl_port` in Hetzner as well.
 
 The role bundles the LenMail AMX plugin sources, classic announcer WAVs and the
-five community maps used by the configured rotation (`fy_pool_day`,
+five community maps available for voting (`fy_pool_day`,
 `fy_iceworld`, `fy_snow`, `aim_map`, `awp_map`). They are deployed to the game
 server and mirrored to FastDL. Set `cs16_install_bundled_maps: false` if you do
 not want to deploy them. Provenance and redistribution notes are documented in
 `roles/cs16_server/files/custom_content/SOURCES.md`.
+
+`cs16_mapcycle` controls the automatic rotation and defaults to classic
+bomb-defusal maps only. `cs16_votable_maps` additionally exposes the bundled
+fight-yard, aim and AWP maps for nomination and voting. Hostage maps are not
+included in either list.
 
 ## Updates
 

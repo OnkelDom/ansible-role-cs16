@@ -8,7 +8,7 @@ cs16_steamcmd_dir: "{{ cs16_home }}/steamcmd"
 cs16_hostname: "LenMail CS 1.6 Fun Server | Classics, Bots & RTV"
 cs16_port: 27015
 cs16_maxplayers: 16
-cs16_start_map: fy_pool_day
+cs16_start_map: de_dust2
 cs16_sys_ticrate: 500
 cs16_pingboost: 2
 cs16_manage_ufw: true
@@ -57,18 +57,42 @@ cs16_admin_steamids: []
 cs16_install_bundled_maps: true
 cs16_mapcycle:
   - de_dust2
-  - fy_pool_day
   - de_inferno
-  - fy_iceworld
   - de_nuke
-  - fy_snow
   - de_train
-  - aim_map
   - de_cbble
-  - awp_map
-  - cs_office
-  - cs_italy
   - de_aztec
+  - de_dust
+  - de_prodigy
+  - de_piranesi
+  - de_chateau
+  - de_torn
+  - de_storm
+  - de_vertigo
+  - de_airstrip
+  - de_survivor
+
+cs16_votable_maps:
+  - de_dust2
+  - de_inferno
+  - de_nuke
+  - de_train
+  - de_cbble
+  - de_aztec
+  - de_dust
+  - de_prodigy
+  - de_piranesi
+  - de_chateau
+  - de_torn
+  - de_storm
+  - de_vertigo
+  - de_airstrip
+  - de_survivor
+  - fy_pool_day
+  - fy_iceworld
+  - fy_snow
+  - aim_map
+  - awp_map
 
 # Optional community maps. Each entry needs url and filename.
 cs16_custom_maps: []
