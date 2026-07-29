@@ -1,0 +1,58 @@
+#!/usr/bin/env python3
+import pathlib
+import socket
+import subprocess
+
+SERVICE = "cs16.service"
+ADDRESS = ("127.0.0.1", {{ cs16_port }})
+TIMEOUT = {{ cs16_healthcheck_timeout }}
+MAX_FAILURES = {{ cs16_healthcheck_failures }}
+STATE_FILE = pathlib.Path("/run/cs16-healthcheck.failures")
+QUERY = b"\xff\xff\xff\xffTSource Engine Query\x00"
+
+
+def service_active():
+    return subprocess.run(
+        ["systemctl", "is-active", "--quiet", SERVICE], check=False
+    ).returncode == 0
+
+
+def query_server():
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+            sock.settimeout(TIMEOUT)
+            sock.sendto(QUERY, ADDRESS)
+            response, _ = sock.recvfrom(4096)
+            if len(response) == 9 and response[4] == 0x41:
+                sock.sendto(QUERY + response[5:9], ADDRESS)
+                response, _ = sock.recvfrom(4096)
+            return len(response) > 5 and response[4] in (0x49, 0x6D)
+    except (OSError, TimeoutError):
+        return False
+
+
+def restart(reason):
+    print(f"CS 1.6 healthcheck: {reason}; restarting {SERVICE}", flush=True)
+    subprocess.run(["systemctl", "restart", SERVICE], check=True)
+    STATE_FILE.unlink(missing_ok=True)
+
+
+if not service_active():
+    restart("service is inactive")
+elif query_server():
+    STATE_FILE.unlink(missing_ok=True)
+    print("CS 1.6 healthcheck: A2S query successful", flush=True)
+else:
+    try:
+        failures = int(STATE_FILE.read_text(encoding="ascii").strip()) + 1
+    except (FileNotFoundError, ValueError):
+        failures = 1
+    STATE_FILE.write_text(str(failures), encoding="ascii")
+    if failures >= MAX_FAILURES:
+        restart(f"A2S query failed {failures} consecutive times")
+    else:
+        print(
+            f"CS 1.6 healthcheck: A2S query failed "
+            f"({failures}/{MAX_FAILURES})",
+            flush=True,
+        )

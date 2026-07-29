@@ -1,0 +1,12 @@
+[Unit]
+Description=Run Counter-Strike 1.6 healthcheck regularly
+
+[Timer]
+OnBootSec=3min
+OnUnitActiveSec={{ cs16_healthcheck_interval }}
+AccuracySec=10s
+RandomizedDelaySec=15s
+Unit=cs16-healthcheck.service
+
+[Install]
+WantedBy=timers.target

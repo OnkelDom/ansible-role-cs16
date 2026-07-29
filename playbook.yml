@@ -7,7 +7,7 @@
       vars:
         cs16_hostname: "LenMail CS 1.6 Fun Server | Classics, Bots & RTV"
         cs16_maxplayers: 16
-        cs16_start_map: fy_pool_day
+        cs16_start_map: de_dust2
         cs16_bot_fill_players: 10
         cs16_manage_fail2ban_whitelist: true
         cs16_admin_steamids:
