@@ -4,6 +4,7 @@ Installs a native SteamCMD/HLDS server on Debian with:
 
 - dedicated unprivileged service account;
 - systemd lifecycle and crash restart;
+- an A2S watchdog that recovers a running-but-unresponsive HLDS process;
 - 32-bit runtime and Steam compatibility link;
 - AMX Mod X and SteamID-based admins;
 - YaPB bots that fill to a configurable player count;
@@ -40,6 +41,9 @@ cs16_maxplayers: 16
 cs16_start_map: de_dust2
 cs16_sys_ticrate: 500
 cs16_pingboost: 2
+cs16_healthcheck_enabled: true
+cs16_healthcheck_interval: 2min
+cs16_healthcheck_failures: 3
 cs16_bot_fill_players: 10
 cs16_bot_difficulty: 1
 cs16_bot_shoots_thru_walls: 0

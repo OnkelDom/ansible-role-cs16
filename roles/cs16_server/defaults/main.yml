@@ -12,6 +12,10 @@ cs16_start_map: de_dust2
 cs16_sys_ticrate: 500
 cs16_pingboost: 2
 cs16_manage_ufw: true
+cs16_healthcheck_enabled: true
+cs16_healthcheck_interval: 2min
+cs16_healthcheck_failures: 3
+cs16_healthcheck_timeout: 4
 cs16_fastdl_enabled: true
 cs16_fastdl_port: 8081
 cs16_fastdl_root: /srv/cs16-fastdl
