@@ -360,6 +360,16 @@
   when: cs16_install_bundled_maps | bool
   notify: Restart cs16
 
+- name: Install bundled YaPB navigation graphs for community maps
+  ansible.builtin.copy:
+    src: bot_graphs/
+    dest: "{{ cs16_server_dir }}/cstrike/addons/yapb/data/graph/"
+    owner: "{{ cs16_user }}"
+    group: "{{ cs16_group }}"
+    mode: "0644"
+  when: cs16_install_bundled_maps | bool
+  notify: Restart cs16
+
 - name: Publish bundled community map content through FastDL
   ansible.builtin.copy:
     src: custom_content/cstrike/
