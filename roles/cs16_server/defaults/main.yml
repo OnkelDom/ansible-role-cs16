@@ -64,8 +64,12 @@ cs16_mapcycle:
   - fy_snow
   - de_train
   - aim_map
+  - aim_deagle
+  - aim_ak-colt
   - de_cbble
   - awp_map
+  - aim_awp
+  - awp_india
   - cs_office
   - cs_italy
   - de_aztec

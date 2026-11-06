@@ -1,0 +1,17 @@
+
+//	Overview Description File : aim_awp.bsp
+//	Author : ParaBolt
+//	12-1-2013
+
+global 
+{
+	ZOOM	1.79
+	ORIGIN	8 746 76
+	ROTATED	0
+}
+
+layer 
+{
+	IMAGE	"overviews/aim_awp.bmp"
+	HEIGHT	-225
+}

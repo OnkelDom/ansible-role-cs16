@@ -1,0 +1,14 @@
+// overview description file for aim_deagle.bsp
+
+global 
+{
+	ZOOM	3.20
+	ORIGIN	512 	-660	-256
+	ROTATED	0
+}
+
+layer 
+{
+	IMAGE	"overviews/aim_deagle.bmp"
+	HEIGHT	-256
+}
